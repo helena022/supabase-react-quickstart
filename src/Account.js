@@ -5,7 +5,6 @@ const Account = ({ session }) => {
   const [loading, setLoading] = useState(true)
   const [username, setUsername] = useState(null)
   const [website, setWebsite] = useState(null)
-  const [avatarUrl, setAvatarUrl] = useState(null)
 
   useEffect(() => {
     getProfile()
@@ -18,7 +17,7 @@ const Account = ({ session }) => {
 
       let { data, error, status } = await supabase
         .from("profiles")
-        .select("username, website, avatar_url")
+        .select("username, website")
         .eq("id", user.id)
         .single()
 
@@ -29,7 +28,6 @@ const Account = ({ session }) => {
       if (data) {
         setUsername(data.username)
         setWebsite(data.website)
-        setAvatarUrl(data.avatar_url)
       }
     } catch (error) {
       alert(error.message)
@@ -49,7 +47,6 @@ const Account = ({ session }) => {
         id: user.id,
         username,
         website,
-        avatarUrl,
         updated_at: new Date(),
       }
 
@@ -95,15 +92,24 @@ const Account = ({ session }) => {
           </div>
           <div>
             <button
-              type='button'
-              className='button block'
-              onClick={() => supabase.auth.signOut()}
+              type='submit'
+              className='button block primary'
+              disabled={loading}
             >
-              Sign Out
+              Update Profile
             </button>
           </div>
         </form>
       )}
+      <div>
+        <button
+          type='button'
+          className='button block'
+          onClick={() => supabase.auth.signOut()}
+        >
+          Sign Out
+        </button>
+      </div>
     </div>
   )
 }
