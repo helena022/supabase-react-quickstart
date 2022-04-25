@@ -44,7 +44,7 @@ export default function Auth() {
         <h1 className='header'>Supabase + React</h1>
         <p className='description'>{getDescription(loginWith)}</p>
         {loading ? (
-          "Sending magic link..."
+          "Logging you in..."
         ) : (
           <form onSubmit={handleLogin}>
             <label htmlFor='email'>Email</label>
