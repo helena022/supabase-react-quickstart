@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { supabase } from "./supabaseClient"
 
 const descriptions = [
@@ -10,11 +10,16 @@ const descriptions = [
 ]
 
 export default function Auth() {
-  const [isSigningUp, setSigningUp] = useState(false)
+  const [isSigningUp, setIsSigningUp] = useState(false)
   const [loading, setLoading] = useState(false)
   const [loginWith, setLoginWith] = useState("magic_link")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+
+  useEffect(() => {
+    setEmail("")
+    setPassword("")
+  }, [isSigningUp])
 
   const getDescription = (loginWith) => {
     let desc = descriptions.find(
@@ -52,6 +57,20 @@ export default function Auth() {
     }
   }
 
+  const handleSignUp = async (e) => {
+    e.preventDefault()
+
+    try {
+      setLoading(true)
+      const { error } = await supabase.auth.signUp({ email, password })
+      if (error) throw error
+    } catch (error) {
+      alert(error.error_description || error.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const LogIn = () => (
     <>
       <p className='description'>{getDescription(loginWith)}</p>
@@ -62,36 +81,34 @@ export default function Auth() {
   const renderLoginForm = () => {
     if (loginWith === "magic_link") {
       return (
-        <>
-          <form onSubmit={handleMagicLinkLogin}>
-            <label htmlFor='email'>Email</label>
-            <input
-              id='email'
-              className='inputField'
-              type='email'
-              placeholder='Your email'
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-            <button className='button block' aria-live='polite'>
-              Send magic link
-            </button>
-            <div className='loginOptions'>
-              <div
-                className='loginTypeOption'
-                onClick={() => setLoginWith("email")}
-              >
-                Log in with email and password
-              </div>
-              <div
-                className='loginTypeOption'
-                onClick={() => setSigningUp(true)}
-              >
-                Sign up
-              </div>
+        <form onSubmit={handleMagicLinkLogin}>
+          <label htmlFor='email'>Email</label>
+          <input
+            id='email'
+            className='inputField'
+            type='email'
+            placeholder='Your email'
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <button className='button block' aria-live='polite'>
+            Send magic link
+          </button>
+          <div className='loginOptions'>
+            <div
+              className='loginTypeOption'
+              onClick={() => setLoginWith("email")}
+            >
+              Log in with email and password
             </div>
-          </form>
-        </>
+            <div
+              className='loginTypeOption'
+              onClick={() => setIsSigningUp(true)}
+            >
+              Sign up
+            </div>
+          </div>
+        </form>
       )
     }
     if (loginWith === "email") {
@@ -125,7 +142,10 @@ export default function Auth() {
             >
               Log in with magic link instead
             </div>
-            <div className='loginTypeOption' onClick={() => setSigningUp(true)}>
+            <div
+              className='loginTypeOption'
+              onClick={() => setIsSigningUp(true)}
+            >
               Sign up
             </div>
           </div>
@@ -134,7 +154,45 @@ export default function Auth() {
     }
   }
 
-  const SignUp = () => <>sign up</>
+  const SignUp = () => (
+    <>
+      <p className='description'>Sign up with email and password</p>
+      {loading ? "Signing up..." : renderSignUpForm()}
+    </>
+  )
+
+  const renderSignUpForm = () => (
+    <form autoComplete='off' onSubmit={handleSignUp}>
+      <label htmlFor='email'>Email</label>
+      <input
+        id='email'
+        className='inputField'
+        type='email'
+        placeholder='Your email'
+        autoComplete='off'
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+      />
+      <label htmlFor='password'>Password</label>
+      <input
+        id='password'
+        className='inputField'
+        type='password'
+        placeholder='Your password'
+        autoComplete='off'
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+      />
+      <button className='button block' aria-live='polite'>
+        Sign up
+      </button>
+      <div className='loginOptions'>
+        <div className='loginTypeOption' onClick={() => setIsSigningUp(false)}>
+          Already have an account? Sign in.
+        </div>
+      </div>
+    </form>
+  )
 
   return (
     <div className='row flex flex-center'>
