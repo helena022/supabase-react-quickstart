@@ -10,11 +10,11 @@ const descriptions = [
 ]
 
 export default function Auth() {
+  const [isSigningUp, setSigningUp] = useState(false)
   const [loading, setLoading] = useState(false)
   const [loginWith, setLoginWith] = useState("magic_link")
   const [email, setEmail] = useState("")
-
-  console.log(loginWith)
+  const [password, setPassword] = useState("")
 
   const getDescription = (loginWith) => {
     let desc = descriptions.find(
@@ -23,7 +23,7 @@ export default function Auth() {
     return desc.description
   }
 
-  const handleLogin = async (e) => {
+  const handleMagicLinkLogin = async (e) => {
     e.preventDefault()
 
     try {
@@ -38,15 +38,32 @@ export default function Auth() {
     }
   }
 
-  return (
-    <div className='row flex flex-center'>
-      <div className='col-6 form-widget' aria-live='polite'>
-        <h1 className='header'>Supabase + React</h1>
-        <p className='description'>{getDescription(loginWith)}</p>
-        {loading ? (
-          "Logging you in..."
-        ) : (
-          <form onSubmit={handleLogin}>
+  const handleEmailLogin = async (e) => {
+    e.preventDefault()
+
+    try {
+      setLoading(true)
+      const { error } = await supabase.auth.signIn({ email, password })
+      if (error) throw error
+    } catch (error) {
+      alert(error.error_description || error.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const LogIn = () => (
+    <>
+      <p className='description'>{getDescription(loginWith)}</p>
+      {loading ? "Logging you in..." : renderLoginForm()}
+    </>
+  )
+
+  const renderLoginForm = () => {
+    if (loginWith === "magic_link") {
+      return (
+        <>
+          <form onSubmit={handleMagicLinkLogin}>
             <label htmlFor='email'>Email</label>
             <input
               id='email'
@@ -59,8 +76,71 @@ export default function Auth() {
             <button className='button block' aria-live='polite'>
               Send magic link
             </button>
+            <div className='loginOptions'>
+              <div
+                className='loginTypeOption'
+                onClick={() => setLoginWith("email")}
+              >
+                Log in with email and password
+              </div>
+              <div
+                className='loginTypeOption'
+                onClick={() => setSigningUp(true)}
+              >
+                Sign up
+              </div>
+            </div>
           </form>
-        )}
+        </>
+      )
+    }
+    if (loginWith === "email") {
+      return (
+        <form onSubmit={handleEmailLogin}>
+          <label htmlFor='email'>Email</label>
+          <input
+            id='email'
+            className='inputField'
+            type='email'
+            placeholder='Your email'
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <label htmlFor='email'>Password</label>
+          <input
+            id='password'
+            className='inputField'
+            type='password'
+            placeholder='Your password'
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          <button className='button block' aria-live='polite'>
+            Log in
+          </button>
+          <div className='loginOptions'>
+            <div
+              className='loginTypeOption'
+              onClick={() => setLoginWith("magic_link")}
+            >
+              Log in with magic link instead
+            </div>
+            <div className='loginTypeOption' onClick={() => setSigningUp(true)}>
+              Sign up
+            </div>
+          </div>
+        </form>
+      )
+    }
+  }
+
+  const SignUp = () => <>sign up</>
+
+  return (
+    <div className='row flex flex-center'>
+      <div className='col-6 form-widget' aria-live='polite'>
+        <h1 className='header'>Supabase + React</h1>
+        {isSigningUp ? SignUp() : LogIn()}
       </div>
     </div>
   )

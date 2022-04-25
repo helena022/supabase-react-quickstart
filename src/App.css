@@ -371,3 +371,18 @@ button.primary,
   animation: spin 1s linear infinite;
   filter: invert(1);
 }
+
+.loginOptions {
+  margin-top: 0.5em;
+}
+
+.loginTypeOption {
+  font-size: 13px;
+  color: var(--custom-color-secondary);
+  text-align: center;
+  margin-bottom: 0.2em;
+}
+.loginTypeOption:hover {
+  color: var(--custom-color-brand);
+  cursor: pointer;
+}
